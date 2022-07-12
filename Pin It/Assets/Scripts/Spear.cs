@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Spear : MonoBehaviour
@@ -46,18 +44,25 @@ public class Spear : MonoBehaviour
                 Reset();
                 break;
             case "Object":
-                FixedJoint joint = _stickJoint.AddComponent<FixedJoint>(); 
-                joint.anchor = _stickJoint.transform.position; 
-                joint.connectedBody = other.gameObject.GetComponent<Rigidbody>(); 
-                joint.enableCollision = false; 
-                other.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
-                other.gameObject.GetComponentInParent<Stickman>().IgnoreCollisions(gameObject.GetComponentInChildren<Collider>());
+                Attach(other.gameObject);
                 break;
             default:
                 Debug.LogError("No collision for " + other.gameObject.tag);
                 break;
         }
         
+    }
+
+    private void Attach(GameObject objectToAttach)
+    {
+        FixedJoint joint = _stickJoint.AddComponent<FixedJoint>(); 
+        joint.anchor = _stickJoint.transform.position; 
+        joint.connectedBody = objectToAttach.GetComponent<Rigidbody>(); 
+        joint.enableCollision = false; 
+        Stickman stickman = objectToAttach.GetComponentInParent<Stickman>();
+        stickman.IgnoreCollisions(gameObject.GetComponentInChildren<Collider>());
+        stickman.ClearConstraints();
+        objectToAttach.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
     }
 
     public void LookAt(Vector3 target)
@@ -86,19 +91,26 @@ public class Spear : MonoBehaviour
         _rigidBody.angularVelocity = Vector3.zero;
         _rigidBody.useGravity = false;
     }
+
     private void Reset()
     {
         StopPhysics();
-        transform.position = _startPos;
-        transform.rotation = _startRot;
-        _isWaitingThrow = true;
         FixedJoint[] joints = _stickJoint.GetComponents<FixedJoint>(); 
         if (joints.Length > 0)
         {
             foreach(FixedJoint joint in joints)
             {
-                joint.connectedBody = null; 
+                if(joint.connectedBody != null)
+                {
+                    Stickman stickman = joint.connectedBody.gameObject.GetComponentInParent<Stickman>();
+                    if (stickman != null) stickman.ClearConstraints();
+                    joint.connectedBody = null; 
+                }
             }
         }
+
+        transform.position = _startPos;
+        transform.rotation = _startRot;
+        _isWaitingThrow = true;
     }
 }

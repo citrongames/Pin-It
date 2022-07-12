@@ -1,15 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Trajectory : MonoBehaviour
 {
-    [SerializeField] private LineRenderer _lineRenderer;
     [SerializeField] private int _pointsCount;
     [SerializeField] GameObject _crosshair;
+    [SerializeField] private LineRenderer _lineRenderer;
     private List<Vector3> _linePoints = new List<Vector3>();
-
     public static Trajectory Instance;
+
     void Awake()
     {
         Instance = this;

@@ -1,25 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using NewTypes;
 
 public class Stickman : MonoBehaviour
 {
-    [SerializeField] private List<Color> _randomColors;
     private Collider[] _colliders;
     private Rigidbody[] _rigidBodies;
+    private SkinnedMeshRenderer[] _meshes;
 
     void Awake()
     {
         _colliders = GetComponentsInChildren<Collider>();
         _rigidBodies = GetComponentsInChildren<Rigidbody>();
-
-        SkinnedMeshRenderer[] meshes = GetComponentsInChildren<SkinnedMeshRenderer>();
-        int randomColor = Random.Range(0, _randomColors.Count-1);
-        foreach(SkinnedMeshRenderer mesh in meshes)
-        {
-            mesh.material.color = _randomColors[randomColor];
-        }
+        _meshes = GetComponentsInChildren<SkinnedMeshRenderer>();
     }
 
     public void IgnoreCollisions(Collider collider)
@@ -40,30 +31,33 @@ public class Stickman : MonoBehaviour
         }
     }
 
-    public void EnableGravity()
+    public void SetGravity(bool gravity)
     {
         foreach(Rigidbody rigidbody in _rigidBodies)
         {
-            rigidbody.useGravity = true;
+            rigidbody.useGravity = gravity;
         }
     }
 
-    public void AddForce(Direction direction, Vector2 forceRandom)
+    public void AddForce(Vector3 direction, Vector2 forceRandom)
     {
-        Vector3 dir = Vector3.zero;
-        switch(direction)
-        {
-            case Direction.Left:
-                dir = Vector3.left;
-                break;
-            case Direction.Center:
-                dir = Vector3.zero;
-                break;
-            case Direction.Right:
-                dir = Vector3.right;
-                break;
-        }
-        _rigidBodies[0].AddForce((Vector3.up + dir) * Random.Range(forceRandom.x, forceRandom.y), ForceMode.Impulse);
+        _rigidBodies[0].AddForce((direction) * Random.Range(forceRandom.x, forceRandom.y), ForceMode.Impulse);
         _rigidBodies[0].AddTorque(Vector3.up * 4000f, ForceMode.Impulse);
+    }
+
+    public void ChangeColor(Color color)
+    {
+        foreach(SkinnedMeshRenderer mesh in _meshes)
+        {
+            mesh.material.color = color;
+        }
+    }
+
+    public void ClearConstraints()
+    {
+        foreach(Rigidbody rigidBody in _rigidBodies)
+        {
+            rigidBody.constraints = RigidbodyConstraints.None;
+        }
     }
 }
